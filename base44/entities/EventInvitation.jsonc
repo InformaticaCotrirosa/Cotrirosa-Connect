@@ -1,0 +1,54 @@
+{
+  "name": "EventInvitation",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "ID do evento"
+    },
+    "event_title": {
+      "type": "string",
+      "description": "T\u00edtulo do evento"
+    },
+    "event_start": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "event_end": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "invitee_id": {
+      "type": "string",
+      "description": "ID do convidado"
+    },
+    "invitee_name": {
+      "type": "string"
+    },
+    "inviter_id": {
+      "type": "string",
+      "description": "ID de quem convidou"
+    },
+    "inviter_name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pendente",
+        "aceito",
+        "recusado",
+        "talvez"
+      ],
+      "default": "pendente"
+    },
+    "response_note": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "event_id",
+    "invitee_id",
+    "inviter_id"
+  ]
+}

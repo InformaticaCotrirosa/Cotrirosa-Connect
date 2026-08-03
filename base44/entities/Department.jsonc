@@ -1,0 +1,39 @@
+{
+  "name": "Department",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nome do departamento"
+    },
+    "unit": {
+      "type": "string",
+      "enum": [
+        "agronegocio",
+        "supermercados",
+        "lojas_agropecuarias",
+        "fabrica_racao",
+        "centro_distribuicao",
+        "administrativo"
+      ],
+      "description": "Unidade da cooperativa"
+    },
+    "manager_id": {
+      "type": "string",
+      "description": "ID do gerente do departamento"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o do departamento"
+    },
+    "member_count": {
+      "type": "number",
+      "default": 0,
+      "description": "N\u00famero de membros"
+    }
+  },
+  "required": [
+    "name",
+    "unit"
+  ]
+}

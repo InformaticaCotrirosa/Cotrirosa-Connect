@@ -1,0 +1,83 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "user"
+      ],
+      "default": "user"
+    },
+    "position": {
+      "type": "string",
+      "description": "Cargo do usu\u00e1rio"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Telefone"
+    },
+    "email_signature": {
+      "type": "string",
+      "description": "Assinatura de e-mail"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "disponivel",
+        "ocupado",
+        "ausente",
+        "nao_perturbe",
+        "ferias",
+        "desativado"
+      ],
+      "default": "disponivel"
+    },
+    "unit": {
+      "type": "string",
+      "enum": [
+        "agronegocio",
+        "supermercados",
+        "lojas_agropecuarias",
+        "fabrica_racao",
+        "centro_distribuicao",
+        "administrativo"
+      ]
+    },
+    "work_schedule": {
+      "type": "object",
+      "description": "Hor\u00e1rio de expediente para agendamento",
+      "properties": {
+        "work_days": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Dias da semana: 0=Dom, 1=Seg, ..., 6=Sab"
+        },
+        "morning_start": {
+          "type": "string",
+          "description": "In\u00edcio do turno da manh\u00e3 (HH:MM)"
+        },
+        "morning_end": {
+          "type": "string",
+          "description": "Fim do turno da manh\u00e3 (HH:MM)"
+        },
+        "afternoon_start": {
+          "type": "string",
+          "description": "In\u00edcio do turno da tarde (HH:MM)"
+        },
+        "afternoon_end": {
+          "type": "string",
+          "description": "Fim do turno da tarde (HH:MM)"
+        },
+        "has_lunch_break": {
+          "type": "boolean",
+          "default": true,
+          "description": "Se h\u00e1 intervalo de almo\u00e7o"
+        }
+      }
+    }
+  }
+}

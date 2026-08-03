@@ -1,0 +1,99 @@
+{
+  "name": "InternalEmail",
+  "type": "object",
+  "properties": {
+    "subject": {
+      "type": "string",
+      "description": "Assunto do e-mail"
+    },
+    "body": {
+      "type": "string",
+      "description": "Corpo do e-mail em HTML"
+    },
+    "sender_id": {
+      "type": "string"
+    },
+    "sender_name": {
+      "type": "string"
+    },
+    "sender_email": {
+      "type": "string"
+    },
+    "recipients": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs dos destinat\u00e1rios"
+    },
+    "recipient_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Nomes dos destinat\u00e1rios"
+    },
+    "cc": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "folder": {
+      "type": "string",
+      "enum": [
+        "inbox",
+        "sent",
+        "drafts",
+        "trash",
+        "archive"
+      ],
+      "default": "inbox"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_starred": {
+      "type": "boolean",
+      "default": false
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "normal",
+        "alta",
+        "urgente"
+      ],
+      "default": "normal"
+    },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "parent_email_id": {
+      "type": "string",
+      "description": "ID do e-mail original (para respostas)"
+    },
+    "thread_id": {
+      "type": "string",
+      "description": "ID da thread de conversa"
+    },
+    "owner_id": {
+      "type": "string",
+      "description": "Propriet\u00e1rio desta c\u00f3pia do e-mail"
+    },
+    "labels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "subject",
+    "sender_id"
+  ]
+}

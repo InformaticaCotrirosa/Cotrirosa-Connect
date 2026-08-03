@@ -1,0 +1,128 @@
+{
+  "name": "CalendarEvent",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "T\u00edtulo do evento"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o detalhada"
+    },
+    "location": {
+      "type": "string",
+      "description": "Local do evento"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "reuniao",
+        "visita",
+        "interno",
+        "externo",
+        "treinamento",
+        "assembleia"
+      ],
+      "description": "Tipo de evento"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data e hora de in\u00edcio"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data e hora de t\u00e9rmino"
+    },
+    "all_day": {
+      "type": "boolean",
+      "default": false,
+      "description": "Evento de dia inteiro"
+    },
+    "participants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs dos participantes"
+    },
+    "participant_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Nomes dos participantes"
+    },
+    "organizer_name": {
+      "type": "string",
+      "description": "Nome do organizador"
+    },
+    "department_id": {
+      "type": "string",
+      "description": "Departamento associado"
+    },
+    "unit": {
+      "type": "string",
+      "enum": [
+        "agronegocio",
+        "supermercados",
+        "lojas_agropecuarias",
+        "fabrica_racao",
+        "centro_distribuicao",
+        "administrativo",
+        "geral"
+      ],
+      "description": "Unidade da cooperativa"
+    },
+    "room_id": {
+      "type": "string",
+      "description": "Sala reservada"
+    },
+    "is_recurring": {
+      "type": "boolean",
+      "default": false
+    },
+    "recurrence_rule": {
+      "type": "string",
+      "description": "Regra de recorr\u00eancia (daily, weekly, monthly)"
+    },
+    "color": {
+      "type": "string",
+      "default": "#22c55e",
+      "description": "Cor do evento"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "baixa",
+        "media",
+        "alta",
+        "urgente"
+      ],
+      "default": "media"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "confirmado",
+        "pendente",
+        "cancelado"
+      ],
+      "default": "confirmado"
+    },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs de anexos"
+    }
+  },
+  "required": [
+    "title",
+    "start_date",
+    "end_date"
+  ]
+}

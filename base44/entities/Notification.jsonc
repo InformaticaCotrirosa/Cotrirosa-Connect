@@ -1,0 +1,45 @@
+{
+  "name": "Notification",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Destinat\u00e1rio"
+    },
+    "title": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "convite",
+        "reuniao",
+        "email",
+        "sistema",
+        "lembrete",
+        "alteracao"
+      ],
+      "default": "sistema"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false
+    },
+    "action_url": {
+      "type": "string",
+      "description": "Link para a\u00e7\u00e3o"
+    },
+    "related_id": {
+      "type": "string",
+      "description": "ID do recurso relacionado"
+    }
+  },
+  "required": [
+    "user_id",
+    "title",
+    "message"
+  ]
+}
