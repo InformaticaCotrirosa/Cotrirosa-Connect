@@ -9,6 +9,8 @@ export const UNITS = {
 
 export const ROLES = {
   admin: 'Administrador',
+  gerente: 'Gerente',
+  coordenador: 'Coordenador',
   user: 'Usuário',
 };
 

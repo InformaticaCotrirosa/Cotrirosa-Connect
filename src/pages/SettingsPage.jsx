@@ -351,7 +351,7 @@ export default function SettingsPage() {
                               onValueChange={newRole => handleRoleChange(u, newRole)}
                               disabled={changingRole === u.id || !isActive}
                             >
-                              <SelectTrigger className="w-36 h-8 text-xs">
+                              <SelectTrigger className="w-44 h-8 text-xs">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>

@@ -174,12 +174,15 @@ router.put('/:id', authMiddleware, async (req, res) => {
       return res.status(403).json({ error: 'Apenas administradores podem alterar o perfil de acesso' });
     }
 
-    if (role !== undefined && role !== 'admin' && role !== 'user') {
-      return res.status(400).json({ error: 'Perfil inválido. Use admin ou user' });
+    const ALLOWED_ROLES = ['admin', 'gerente', 'coordenador', 'user'];
+    if (role !== undefined && !ALLOWED_ROLES.includes(role)) {
+      return res.status(400).json({
+        error: 'Perfil inválido. Use admin, gerente, coordenador ou user',
+      });
     }
 
     // Impede remover o último administrador do sistema
-    if (role === 'user') {
+    if (role !== undefined && role !== 'admin') {
       const targetResult = await connection.execute(
         'SELECT role FROM cnt_users WHERE id = :id',
         { id: req.params.id }
