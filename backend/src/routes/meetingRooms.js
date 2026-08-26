@@ -2,6 +2,7 @@ import express from 'express';
 import { authMiddleware } from '../middleware/auth.js';
 import { getConnection } from '../config/database.js';
 import { generateId, paginationParams } from '../utils/helpers.js';
+import { parseAllowedRoles, serializeAllowedRoles } from '../utils/roomPermissions.js';
 
 const router = express.Router();
 
@@ -32,9 +33,10 @@ const mapRoomRow = (row) => ({
   sort_order: row[9] ?? 0,
   // null/undefined = ativa (compatibilidade com bancos ainda sem backfill)
   is_active: fromOracleBool(row[10]),
+  allowed_roles: parseAllowedRoles(row[11]),
 });
 
-const ROOM_SELECT = `id, name, description, capacity, location, resources, color, type, unit, sort_order, is_active`;
+const ROOM_SELECT = `id, name, description, capacity, location, resources, color, type, unit, sort_order, is_active, allowed_roles`;
 
 // Listar salas de reunião
 // ?active_only=true → apenas salas ativas (para agendamento)
@@ -115,6 +117,7 @@ router.post('/', authMiddleware, async (req, res) => {
       unit = null,
       sort_order = 0,
       is_active = true,
+      allowed_roles,
     } = req.body;
 
     if (!name) {
@@ -124,14 +127,15 @@ router.post('/', authMiddleware, async (req, res) => {
     connection = await getConnection();
     const roomId = generateId();
     const active = toOracleBool(is_active);
+    const allowedRoles = serializeAllowedRoles(allowed_roles);
 
     await connection.execute(
       `INSERT INTO cnt_meeting_rooms (
          id, name, description, capacity, location, resources,
-         color, type, unit, sort_order, is_active, created_date
+         color, type, unit, sort_order, is_active, allowed_roles, created_date
        ) VALUES (
          :id, :name, :description, :capacity, :location, :resources,
-         :color, :type, :unit, :sortOrder, :isActive, SYSDATE
+         :color, :type, :unit, :sortOrder, :isActive, :allowedRoles, SYSDATE
        )`,
       {
         id: roomId,
@@ -145,6 +149,7 @@ router.post('/', authMiddleware, async (req, res) => {
         unit,
         sortOrder: sort_order ?? 0,
         isActive: active,
+        allowedRoles,
       },
       { autoCommit: true }
     );
@@ -156,6 +161,7 @@ router.post('/', authMiddleware, async (req, res) => {
       type: type || 'sala_reuniao',
       unit,
       is_active: active === 1,
+      allowed_roles: parseAllowedRoles(allowedRoles),
     });
   } catch (error) {
     console.error('Erro ao criar sala:', error);
@@ -203,6 +209,13 @@ router.put('/:id', authMiddleware, async (req, res) => {
       if (key === 'is_active') {
         updates.push(`is_active = :param${paramCount}`);
         params[`param${paramCount}`] = toOracleBool(value);
+        paramCount++;
+        return;
+      }
+
+      if (key === 'allowed_roles') {
+        updates.push(`allowed_roles = :param${paramCount}`);
+        params[`param${paramCount}`] = serializeAllowedRoles(value);
         paramCount++;
         return;
       }

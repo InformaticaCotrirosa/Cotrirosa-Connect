@@ -15,6 +15,7 @@ import SuggestionDialog from './SuggestionDialog';
 import { getWorkSchedule, isEventWithinSchedule } from '@/components/settings/WorkScheduleEditor';
 import { getEventOrganizerId, isUserInvolvedInEvent } from '@/lib/eventInvolvement';
 import { getWideEventsFetchRange } from '@/lib/eventsRange';
+import { canRoleBookRoom } from '@/lib/roomBooking';
 
 const defaultForm = {
   title: '', description: '', location: '', event_type: 'interno',
@@ -66,15 +67,15 @@ export default function EventFormDialog({ open, onOpenChange, event, initialDate
   });
 
   const bookableRooms = useMemo(
-    () => rooms.filter((r) => r.is_active !== false),
-    [rooms]
+    () => rooms.filter((r) => r.is_active !== false && canRoleBookRoom(user?.role, r.allowed_roles)),
+    [rooms, user?.role]
   );
 
   const roomOptions = useMemo(() => {
     const list = [...bookableRooms];
     if (form.room_id) {
       const current = rooms.find((r) => r.id === form.room_id);
-      if (current && current.is_active === false && !list.some((r) => r.id === current.id)) {
+      if (current && !list.some((r) => r.id === current.id)) {
         list.unshift(current);
       }
     }

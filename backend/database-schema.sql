@@ -47,6 +47,7 @@ CREATE TABLE cnt_meeting_rooms (
   unit VARCHAR2(100),
   sort_order NUMBER DEFAULT 0,
   is_active NUMBER(1) DEFAULT 1,
+  allowed_roles VARCHAR2(200),
   created_date TIMESTAMP DEFAULT SYSDATE,
   updated_date TIMESTAMP
 );

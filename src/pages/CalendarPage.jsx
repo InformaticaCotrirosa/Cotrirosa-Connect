@@ -21,6 +21,8 @@ export default function CalendarPage() {
   const [initialDate, setInitialDate] = useState(null);
   const [mineFilter, setMineFilter] = useState(false);
   const [typeFilter, setTypeFilter] = useState('all');
+  const [selectedResourceIds, setSelectedResourceIds] = useState([]);
+  const [selectedUserIds, setSelectedUserIds] = useState([]);
   const queryClient = useQueryClient();
 
   useCalendarRealtime(true, { userId: user?.id, showInvitationToast: false });
@@ -55,6 +57,43 @@ export default function CalendarPage() {
     }
     return map;
   }, [rooms]);
+
+  const resourceOptions = React.useMemo(() => {
+    if (typeFilter === 'all') return [];
+    return rooms
+      .filter((r) => r.is_active !== false && (r.type || 'sala_reuniao') === typeFilter)
+      .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR'));
+  }, [rooms, typeFilter]);
+
+  const handleTypeFilterChange = (nextType) => {
+    setTypeFilter(nextType);
+    setSelectedResourceIds([]);
+  };
+
+  const handleToggleResource = (id) => {
+    setSelectedResourceIds((prev) => (
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    ));
+  };
+
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ['allUsers'],
+    queryFn: () => apiClient.listUsers({ limit: 1000 }),
+    initialData: [],
+    staleTime: 5 * 60_000,
+  });
+
+  const userOptions = React.useMemo(() => (
+    allUsers
+      .filter((u) => u.status !== 'desativado')
+      .sort((a, b) => String(a.full_name || '').localeCompare(String(b.full_name || ''), 'pt-BR'))
+  ), [allUsers]);
+
+  const handleToggleUser = (id) => {
+    setSelectedUserIds((prev) => (
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    ));
+  };
 
   // Fetch invitations to detect pending events (pulsing animation)
   const { data: allInvitations = [] } = useQuery({
@@ -127,17 +166,22 @@ export default function CalendarPage() {
 
   const filteredEvents = React.useMemo(() => {
     let list = events.filter((e) => e.status !== 'cancelado');
-    if (mineFilter) {
+    if (selectedUserIds.length > 0) {
+      list = list.filter((e) => selectedUserIds.some((id) => isUserInvolvedInEvent(e, id)));
+    } else if (mineFilter) {
       list = list.filter((e) => isUserInvolvedInEvent(e, user?.id));
     }
     if (typeFilter !== 'all') {
       list = list.filter((e) => {
         if (!e.room_id) return false;
-        return roomTypeById.get(String(e.room_id)) === typeFilter;
+        const roomId = String(e.room_id);
+        if (roomTypeById.get(roomId) !== typeFilter) return false;
+        if (selectedResourceIds.length === 0) return true;
+        return selectedResourceIds.includes(roomId);
       });
     }
     return list;
-  }, [events, mineFilter, user?.id, typeFilter, roomTypeById]);
+  }, [events, mineFilter, user?.id, typeFilter, roomTypeById, selectedResourceIds, selectedUserIds]);
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -150,7 +194,15 @@ export default function CalendarPage() {
         mineFilterActive={mineFilter}
         onClearMineFilter={clearMineFilter}
         typeFilter={typeFilter}
-        onTypeFilterChange={setTypeFilter}
+        onTypeFilterChange={handleTypeFilterChange}
+        resourceOptions={resourceOptions}
+        selectedResourceIds={selectedResourceIds}
+        onToggleResource={handleToggleResource}
+        onClearResourceFilter={() => setSelectedResourceIds([])}
+        userOptions={userOptions}
+        selectedUserIds={selectedUserIds}
+        onToggleUser={handleToggleUser}
+        onClearUserFilter={() => setSelectedUserIds([])}
       />
 
       {view === 'month' && (

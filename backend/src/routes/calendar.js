@@ -4,6 +4,7 @@ import { getConnection } from '../config/database.js';
 import { generateId, paginationParams } from '../utils/helpers.js';
 import { expandRecurrence } from '../utils/recurrence.js';
 import { syncEventInvitations } from '../utils/eventInvites.js';
+import { canRoleBookRoom } from '../utils/roomPermissions.js';
 
 const router = express.Router();
 
@@ -18,6 +19,29 @@ const emitCalendarChange = (io, userId, eventName, payload = {}) => {
   }
   io.emit('calendar:changed', { type: eventName, ...payload });
 };
+
+async function assertCanBookRoom(connection, userId, roomId) {
+  if (!roomId) return;
+  const userResult = await connection.execute(
+    'SELECT role FROM cnt_users WHERE id = :id',
+    { id: userId }
+  );
+  const role = userResult.rows[0]?.[0] || 'user';
+  const roomResult = await connection.execute(
+    'SELECT allowed_roles FROM cnt_meeting_rooms WHERE id = :id',
+    { id: roomId }
+  );
+  if (roomResult.rows.length === 0) {
+    const err = new Error('Sala ou recurso não encontrado');
+    err.statusCode = 400;
+    throw err;
+  }
+  if (!canRoleBookRoom(role, roomResult.rows[0][0])) {
+    const err = new Error('Seu perfil não tem permissão para agendar este recurso');
+    err.statusCode = 403;
+    throw err;
+  }
+}
 
 const parseParticipants = (value) => {
   if (!value) return [];
@@ -156,6 +180,7 @@ router.post('/', authMiddleware, async (req, res) => {
     }
 
     connection = await getConnection();
+    await assertCanBookRoom(connection, req.userId, room_id);
 
     const base = {
       title,
@@ -247,6 +272,9 @@ router.post('/', authMiddleware, async (req, res) => {
       }
     }
     console.error('Erro ao criar evento:', error);
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ error: error.message });
+    }
     res.status(500).json({ error: 'Erro ao criar evento' });
   } finally {
     if (connection) {
@@ -381,6 +409,8 @@ router.put('/:id', authMiddleware, async (req, res) => {
       color = current.color,
       priority = current.priority,
     } = req.body;
+
+    await assertCanBookRoom(connection, req.userId, room_id);
 
     const newStart = start_date ? new Date(start_date) : new Date(current.start_date);
     const newEnd = end_date ? new Date(end_date) : (current.end_date ? new Date(current.end_date) : null);
@@ -555,6 +585,9 @@ router.put('/:id', authMiddleware, async (req, res) => {
       }
     }
     console.error('Erro ao atualizar evento:', error);
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ error: error.message });
+    }
     res.status(500).json({ error: 'Erro ao atualizar evento' });
   } finally {
     if (connection) {

@@ -17,7 +17,9 @@ import { Plus, MapPin, Users, Check, X, Calendar, Pencil, Trash2, GripVertical, 
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
-import { UNITS } from '@/lib/constants';
+import { UNITS, ROLES } from '@/lib/constants';
+import { Checkbox } from '@/components/ui/checkbox';
+import { BOOKING_ROLES, rolesForRoomForm } from '@/lib/roomBooking';
 import EventFormDialog from '../components/calendar/EventFormDialog';
 import RoomMonitorModal from '../components/meetings/RoomMonitorModal';
 import { useCalendarRealtime } from '@/hooks/useCalendarRealtime';
@@ -28,9 +30,11 @@ export default function MeetingsPage() {
   const [showForm, setShowForm] = useState(false);
   const [showRoomForm, setShowRoomForm] = useState(false);
   const [editingRoom, setEditingRoom] = useState(null);
-  const [roomForm, setRoomForm] = useState({
+  const emptyRoomForm = {
     name: '', type: 'sala_reuniao', unit: '', capacity: '', resources: '', color: '#22c55e', is_active: true,
-  });
+    allowed_roles: [...BOOKING_ROLES],
+  };
+  const [roomForm, setRoomForm] = useState(emptyRoomForm);
   const [savingRoom, setSavingRoom] = useState(false);
   const [deletingRoom, setDeletingRoom] = useState(null);
   const [monitorRoom, setMonitorRoom] = useState(null);
@@ -50,15 +54,14 @@ export default function MeetingsPage() {
       resources: (room.resources || []).join(', '),
       color: room.color || '#22c55e',
       is_active: room.is_active !== false,
+      allowed_roles: rolesForRoomForm(room.allowed_roles),
     });
     setShowRoomForm(true);
   };
 
   const openNewRoom = () => {
     setEditingRoom(null);
-    setRoomForm({
-      name: '', type: 'sala_reuniao', unit: '', capacity: '', resources: '', color: '#22c55e', is_active: true,
-    });
+    setRoomForm({ ...emptyRoomForm });
     setShowRoomForm(true);
   };
 
@@ -74,6 +77,7 @@ export default function MeetingsPage() {
       resources: roomForm.resources ? roomForm.resources.split(',').map(r => r.trim()).filter(Boolean) : [],
       color: roomForm.color || '#22c55e',
       is_active: roomForm.is_active !== false,
+      allowed_roles: roomForm.allowed_roles,
     };
     if (editingRoom) {
       await apiClient.updateMeetingRoom(editingRoom.id, payload);
@@ -83,9 +87,7 @@ export default function MeetingsPage() {
     queryClient.invalidateQueries({ queryKey: ['rooms'] });
     setSavingRoom(false);
     setShowRoomForm(false);
-    setRoomForm({
-      name: '', type: 'sala_reuniao', unit: '', capacity: '', resources: '', color: '#22c55e', is_active: true,
-    });
+    setRoomForm({ ...emptyRoomForm });
     setEditingRoom(null);
   };
 
@@ -310,6 +312,11 @@ export default function MeetingsPage() {
                                       ) : (
                                         <Badge className="text-[10px] bg-emerald-500/15 text-emerald-700 border-0">Ativa</Badge>
                                       )}
+                                      {Array.isArray(room.allowed_roles) && room.allowed_roles.length > 0 && (
+                                        <Badge variant="outline" className="text-[10px]">
+                                          Agendar: {room.allowed_roles.map((r) => ROLES[r] || r).join(', ')}
+                                        </Badge>
+                                      )}
                                       <span className="text-xs text-muted-foreground">Capacidade: {room.capacity} pessoas</span>
                                     </div>
                                     {room.resources?.length > 0 && (
@@ -459,10 +466,40 @@ export default function MeetingsPage() {
                 onCheckedChange={(checked) => setRoomForm((p) => ({ ...p, is_active: checked }))}
               />
             </div>
+            <div className="rounded-lg border border-border px-3 py-2.5 space-y-2">
+              <div>
+                <Label className="text-xs">Quem pode agendar</Label>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  Só estes perfis escolhem este recurso no agendamento. Qualquer pessoa ainda pode ser convidada.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {BOOKING_ROLES.map((roleKey) => {
+                  const checked = (roomForm.allowed_roles || []).includes(roleKey);
+                  return (
+                    <label key={roleKey} className="flex items-center gap-2 text-xs cursor-pointer">
+                      <Checkbox
+                        checked={checked}
+                        onCheckedChange={(isChecked) => {
+                          setRoomForm((p) => {
+                            const current = p.allowed_roles || [];
+                            const next = isChecked
+                              ? [...new Set([...current, roleKey])]
+                              : current.filter((r) => r !== roleKey);
+                            return { ...p, allowed_roles: next };
+                          });
+                        }}
+                      />
+                      {ROLES[roleKey]}
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowRoomForm(false)}>Cancelar</Button>
-            <Button onClick={handleSaveRoom} disabled={savingRoom || !roomForm.name || !roomForm.unit || !roomForm.capacity}>
+            <Button onClick={handleSaveRoom} disabled={savingRoom || !roomForm.name || !roomForm.unit || !roomForm.capacity || !(roomForm.allowed_roles || []).length}>
               {savingRoom ? 'Salvando...' : editingRoom ? 'Salvar' : 'Criar'}
             </Button>
           </DialogFooter>
