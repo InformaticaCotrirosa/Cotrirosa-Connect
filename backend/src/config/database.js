@@ -1,10 +1,15 @@
 import oracledb from 'oracledb';
 import 'dotenv/config';
 
-// If ORACLE_CLIENT_LIB is set, initialize the Oracle Thick client
-if (process.env.ORACLE_CLIENT_LIB) {
+// TNS alias (ex.: PROD) precisa de tnsnames.ora apontado por TNS_ADMIN
+if (process.env.TNS_ADMIN?.trim()) {
+  process.env.TNS_ADMIN = process.env.TNS_ADMIN.trim();
+}
+
+// Instant Client (thick). Sem isso, node-oracledb 6+ usa modo Thin (Easy Connect).
+if (process.env.ORACLE_CLIENT_LIB?.trim()) {
   try {
-    oracledb.initOracleClient({ libDir: process.env.ORACLE_CLIENT_LIB });
+    oracledb.initOracleClient({ libDir: process.env.ORACLE_CLIENT_LIB.trim() });
     console.log('✓ Oracle Instant Client inicializado a partir de', process.env.ORACLE_CLIENT_LIB);
   } catch (err) {
     console.warn('⚠️ Não foi possível inicializar Oracle Instant Client:', err.message || err);

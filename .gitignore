@@ -7,11 +7,17 @@
 # Logs
 /logs
 *.log
+logs-backend.txt
+logs-frontend.txt
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+
+# Runtime PIDs dos scripts subir/parar
+.run-backend.pid
+.run-frontend.pid
 
 node_modules
 dist
@@ -32,3 +38,12 @@ dist-ssr
 .env
 .vite
 base44/.app.jsonc
+
+# Oracle Instant Client (binários locais — não versionar)
+backend/oracle/instantclient*/
+backend/oracle/instantclient/
+backend/oracle/META-INF/
+
+# TNS local (use o .example; não versionar o arquivo real nem .odt)
+backend/oracle/network/admin/tnsnames.ora
+backend/oracle/network/admin/*.odt

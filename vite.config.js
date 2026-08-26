@@ -12,5 +12,17 @@ export default defineConfig({
   },
   plugins: [
     react(),
-  ]
+  ],
+  // Portas exclusivas: evita conflito com npscotri (5173) e HelpDesk (8080)
+  // host 0.0.0.0 = acessível na LAN
+  server: {
+    host: '0.0.0.0',
+    port: 5174,
+    strictPort: true,
+  },
+  preview: {
+    host: '0.0.0.0',
+    port: 5174,
+    strictPort: true,
+  },
 });

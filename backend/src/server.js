@@ -16,16 +16,24 @@ import notificationRoutes from './routes/notifications.js';
 
 const app = express();
 const httpServer = createServer(app);
+
+// FRONTEND_URL pode ser uma origem ou várias separadas por vírgula (LAN + localhost)
+const frontendOrigins = (process.env.FRONTEND_URL || 'http://localhost:5174')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+const corsOrigin = frontendOrigins.length === 1 ? frontendOrigins[0] : frontendOrigins;
+
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: corsOrigin,
     credentials: true
   }
 });
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: corsOrigin,
   credentials: true
 }));
 app.use(express.json());
@@ -88,7 +96,7 @@ app.use((err, req, res, next) => {
 });
 
 // Inicializar aplicação
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3010;
 
 initializeDatabase()
   .then(() => {
@@ -98,6 +106,13 @@ initializeDatabase()
   })
   .catch((error) => {
     console.error('Falha ao inicializar:', error);
+    if (error?.code === 'NJS-516') {
+      console.error(
+        'Dica Oracle: alias TNS sem tnsnames.ora. No Linux use Easy Connect ' +
+          '(ORACLE_CONNECTION_STRING=host:1521/SERVICO) ou configure TNS_ADMIN ' +
+          'apontando para backend/oracle/network/admin (veja tnsnames.ora.example).'
+      );
+    }
     process.exit(1);
   });
 

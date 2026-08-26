@@ -1,0 +1,9 @@
+# Copie para tnsnames.ora nesta pasta e ajuste HOST / PORT / SERVICE_NAME
+PROD =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = SEU_HOST_ORACLE)(PORT = 1526))
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = SEU_SERVICE_NAME)
+    )
+  )
